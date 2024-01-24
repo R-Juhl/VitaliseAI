@@ -57,6 +57,7 @@ const SignupModal = ({ isVisible, onCancel }) => {
             onBackdropPress={onCancel}
             onRequestClose={onCancel}
             style={styles.modal}
+            animationType="slide"
         >
             <KeyboardAvoidingView 
                 behavior={Platform.OS === "ios" ? "padding" : "height"}

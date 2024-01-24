@@ -1,27 +1,37 @@
 // src/screens/BotScreen.js
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  View, Text, Image, ScrollView, SafeAreaView, TouchableOpacity, TextInput, StyleSheet, 
+  View, Text, Image, ScrollView, SafeAreaView, TouchableOpacity, TextInput, 
   ActivityIndicator, KeyboardAvoidingView, Platform 
 } from 'react-native';
 import { Audio } from 'expo-av';
 import { AntDesign } from '@expo/vector-icons';
-import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
 import axios from 'axios';
+
 import useStore from '../store/store';
+import useAppSettings from '../store/useAppSettings';
+import { translate } from '../components/translate';
+import { useDynamicStyles } from '../hooks/useDynamicStyles';
+import { useTheme } from '../context/ThemeContext';
 
 const BotScreen = ({ isActive, route }) => {
+  const user = useStore(state => state.user);
+  const { language } = useAppSettings();
+  const dynamicStyles = useDynamicStyles();
+  const { theme } = useTheme();
+  
   const scrollViewRef = useRef();
   const [messages, setMessages] = useState([]);
   const [userMessage, setUserMessage] = useState("");
   const [threadId, setThreadId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const user = useStore(state => state.user);
   const [playingAudio, setPlayingAudio] = useState(null);
   const [sound, setSound] = useState(null);
   const [recording, setRecording] = useState();
 
   const apiBaseUrl = 'http://enormous-mallard-noted.ngrok-free.app';
+
+  const iconColor = theme === 'dark' ? "#FFF" : "#05445E";
 
   useEffect(() => {
     if (!user?.id) {
@@ -83,7 +93,6 @@ const BotScreen = ({ isActive, route }) => {
 
   // Handle sending new message
   const handleSendMessage = async (messageText) => {
-    // Check if messageText is undefined or if it's an empty string after trimming
     if (!messageText || !messageText.trim()) return;
   
     const newUserMessage = { text: messageText, role: 'user' };
@@ -105,6 +114,7 @@ const BotScreen = ({ isActive, route }) => {
       console.error('Error sending message:', error);
     } finally {
       setIsLoading(false);
+      setUserMessage("");
     }
   };
 
@@ -162,10 +172,13 @@ const BotScreen = ({ isActive, route }) => {
     }
   
     try {
-      const response = await axios.post(`${apiBaseUrl}/text_to_speech`, { text });
+      const response = await axios.post(`${apiBaseUrl}/text_to_speech`, {
+        text,
+        user_id: user.id
+      });
       const audioUrl = response.data.audio_url;
       const { sound: newSound } = await Audio.Sound.createAsync({ uri: audioUrl });
-  
+      
       // Set the sound object in the state
       setSound(newSound);
       setPlayingAudio({ sound: newSound, index });
@@ -180,6 +193,7 @@ const BotScreen = ({ isActive, route }) => {
   
       // Start playing the audio
       await newSound.playAsync();
+      
     } catch (error) {
       console.error('Error playing audio:', error);
     }
@@ -253,8 +267,8 @@ const BotScreen = ({ isActive, route }) => {
     if (role === 'system') {
       // Render system messages as plain text
       return (
-        <View key={`message-${index}`} style={styles.systemMessageContainer}>
-          <Text style={styles.systemMessageText}>{message.text}</Text>
+        <View key={`message-${index}`} style={dynamicStyles.botSystemMessageContainer}>
+          <Text style={dynamicStyles.botSystemMessageText}>{message.text}</Text>
         </View>
       );
     } else {
@@ -265,8 +279,8 @@ const BotScreen = ({ isActive, route }) => {
 
   const renderMessageWithAudio = (message, role, index) => {
     const isPlaying = playingAudio && playingAudio.index === index;
-    const messageStyle = role === 'user' ? styles.userMessage : styles.assistantMessage;
-    const containerStyle = role === 'user' ? styles.userContainer : styles.assistantContainer;
+    const messageStyle = role === 'user' ? dynamicStyles.botUserMessage : dynamicStyles.botAssistantMessage;
+    const containerStyle = role === 'user' ? dynamicStyles.botUserContainer : dynamicStyles.botAssistantContainer;
     const iconColor = role === 'user' ? '#FFF' : '#1A2F38';
 
     return (
@@ -288,7 +302,7 @@ const BotScreen = ({ isActive, route }) => {
   // Function to format text
   const formatText = (text, role = 'assistant') => {
     if (!text) {
-      return <Text style={styles.message}>No message text available.</Text>;
+      return <Text style={dynamicStyles.botMessage}>{translate('noMessageText', language)}</Text>;
     }
   
     // Split the text by line breaks
@@ -299,11 +313,11 @@ const BotScreen = ({ isActive, route }) => {
       const parts = line.split(boldRegex);
   
       return (
-        <Text key={index} style={role === 'system' ? styles.systemMessage : (role === 'user' ? styles.messageUser : styles.messageAssistant)}>
+        <Text key={index} style={role === 'system' ? dynamicStyles.botSystemMessage : (role === 'user' ? dynamicStyles.botMessageUser : dynamicStyles.botMessageAssistant)}>
           {parts.map((part, i) => {
             // Every second part is the bold text (due to how split works with regex)
             if (i % 2 === 1) {
-              return <Text key={i} style={styles.bold}>{part}</Text>;
+              return <Text key={i} style={{ fontWeight: 'bold' }} >{part}</Text>;
             }
             return part;
           })}
@@ -320,29 +334,29 @@ const BotScreen = ({ isActive, route }) => {
       style={{ flex: 1 }}
       keyboardVerticalOffset={Platform.OS === "ios" ? 25 : 0}
     >
-      <View style={styles.container}>
-        <SafeAreaView style={styles.safeArea}>
+      <View style={dynamicStyles.botContainer}>
+        <SafeAreaView style={dynamicStyles.botSafeArea}>
           
           {/* Bot Icon */}
-          <View style={styles.botIconContainer}>
+          <View style={dynamicStyles.botIconContainer}>
             <Image  
               source={require('../../assets/images/bot.png')}
-              style={styles.botIcon}
+              style={dynamicStyles.botIcon}
             />
-            <Text style={styles.botTitle}>Longevity Genie</Text>
+            <Text style={dynamicStyles.botTitle}>{translate('botTitle', language)}</Text>
           </View>
 
           {/* Message History */}
-          <View style={styles.messageContainer}>
-            <View style={styles.messageHistory}>
+          <View style={dynamicStyles.botMessageContainer}>
+            <View style={dynamicStyles.botMessageHistory}>
               <ScrollView 
-                style={styles.scrollView} 
+                style={dynamicStyles.botScrollView} 
                 ref={scrollViewRef} 
                 onContentSizeChange={() => scrollViewRef.current.scrollToEnd({ animated: true })}
               >
                 {!isLoading && messages.length === 0 && user?.id && (
-                  <Text style={styles.placeholderText}>
-                    Start a new conversation
+                  <Text style={dynamicStyles.botPlaceholderText}>
+                    {translate('startNewConversation', language)}
                   </Text>
                 )}
                 {messages.map((message, index) => (
@@ -358,37 +372,56 @@ const BotScreen = ({ isActive, route }) => {
           </View>
 
           {/* Message Input, Attach Button, and Send Button */}
-          <View style={styles.inputContainer}>
+          <View style={dynamicStyles.botInputContainer}>
             <TextInput
-              style={styles.messageInput}
+              style={dynamicStyles.botMessageInput}
               value={userMessage}
               onChangeText={setUserMessage}
-              placeholder="Type message here"
+              placeholder={translate('typeMessageHere', language)}
               placeholderTextColor="#666"
             />
-            <TouchableOpacity style={styles.attachButton} onPress={handleAttach}>
-              <AntDesign name="pluscircleo" size={24} color="#FFF" />
+            <TouchableOpacity 
+              style={dynamicStyles.botAttachButton} 
+              onPress={handleAttach}
+              disabled={!user?.id}
+            >
+              <AntDesign name="pluscircleo" size={24} color={iconColor} />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.sendButton} onPress={() => handleSendMessage(userMessage)}>
-              <Text style={styles.sendButtonText}>Send</Text>
+            <TouchableOpacity 
+              style={dynamicStyles.botSendButton} 
+              onPress={() => handleSendMessage(userMessage)}
+              disabled={!user?.id}
+            >
+              <Text style={dynamicStyles.botSendButtonText}>{translate('send', language)}</Text>
             </TouchableOpacity>
           </View>
 
           {/* Record Button and New/Exit Chat Buttons */}
-          <View style={styles.buttonsContainer}>
-            <TouchableOpacity style={styles.sideButton}>
-              <Text style={styles.sideButtonText}>Close Chat</Text>
+          <View style={dynamicStyles.botButtonsContainer}>
+            <TouchableOpacity 
+              style={dynamicStyles.botSideButton}
+              disabled={!user?.id}
+            >
+              <Text style={dynamicStyles.botSideButtonText}>{translate('closeChat', language)}</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.recordButton} onPress={recording ? stopRecording : startRecording}>
+            <TouchableOpacity 
+              style={dynamicStyles.botRecordButton} 
+              onPress={recording ? stopRecording : startRecording}
+              disabled={!user?.id}
+            >
               <Image 
                 source={recording ? require('../../assets/images/voiceLoading.png') : require('../../assets/images/recordingIcon.png')}
-                style={styles.recordIcon}
+                style={dynamicStyles.botRecordIcon}
               />
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.sideButton} onPress={handleNewChat}>
-              <Text style={styles.sideButtonText}>New Chat</Text>
+            <TouchableOpacity 
+              style={dynamicStyles.botSideButton} 
+              onPress={handleNewChat}
+              disabled={!user?.id}
+            >
+              <Text style={dynamicStyles.botSideButtonText}>{translate('newChat', language)}</Text>
             </TouchableOpacity>
           </View>
         </SafeAreaView>
@@ -396,185 +429,6 @@ const BotScreen = ({ isActive, route }) => {
     </KeyboardAvoidingView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#1A2F38',
-  },
-  safeArea: {
-    flex: 1,
-    marginHorizontal: wp(5),
-  },
-  systemMessageContainer: {
-    padding: wp(4),
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  systemMessageText: {
-    color: 'white',
-    fontSize: 16,
-  },
-  userContainer: {
-    width: '100%',
-    alignItems: 'flex-end',
-    paddingHorizontal: wp(1),
-    marginVertical: 5,
-  },
-  assistantContainer: {
-    width: '100%',
-    alignItems: 'flex-start',
-    paddingHorizontal: wp(1),
-    marginVertical: 5,
-  },
-  userMessage: {
-    maxWidth: '90%',
-    alignSelf: 'flex-end',
-    backgroundColor: '#218aff',
-    padding: 10,
-    borderRadius: 10,
-  },
-  assistantMessage: {
-    maxWidth: '90%',
-    alignSelf: 'flex-start',
-    backgroundColor: '#d8d8d8',
-    padding: 10,
-    borderRadius: 10,
-  },
-  botIconContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: hp(2),
-  },
-  botIcon: {
-    height: hp(10),
-    width: hp(10),
-  },
-  botTitle: {
-    color: '#FFF',
-    fontSize: wp(5),
-    fontWeight: 'bold',
-    marginTop: hp(1),
-  },
-  messageContainer: {
-    flex: 1,
-    marginTop: hp(1),
-  },
-  systemMessage: {
-    color: '#FFF',
-    fontSize: 16,
-  },
-  message: {
-    color: '#FFF',
-    fontSize: 16,
-  },
-  messageUser: {
-    color: '#FFF',
-    fontSize: 16,
-  },
-  messageAssistant: {
-    color: 'black',
-    fontSize: 16,
-  },
-  bold: {
-    fontWeight: 'bold',
-  },
-  user: {
-    alignSelf: 'flex-end',
-    backgroundColor: '#218aff',
-    padding: 10,
-    borderRadius: 10,
-    marginVertical: 5,
-  },
-  assistant: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#d8d8d8',
-    padding: 10,
-    borderRadius: 10,
-    marginVertical: 5,
-  },
-  messageHistory: {
-    flex: 1,
-    backgroundColor: '#05445E',
-    borderRadius: 20,
-    padding: wp(4),
-    marginTop: hp(1),
-    marginBottom: hp(1),
-  },
-  messageWithAudio: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 5,
-  },
-  scrollView: {
-    flexGrow: 1,
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: hp(1),
-    marginBottom: hp(1),
-  },
-  inputRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: hp(1),
-    marginBottom: hp(1),
-  },
-  messageInput: {
-    flex: 1,
-    backgroundColor: '#ECEFF1',
-    borderRadius: 20,
-    paddingHorizontal: wp(4),
-    paddingVertical: hp(1),
-    fontSize: wp(4),
-    color: '#1A2F38',
-  },
-  attachButton: {
-    marginLeft: wp(1),
-    marginRight: wp(3),
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  sendButton: {
-    backgroundColor: '#05445E',
-    borderRadius: 20,
-    paddingVertical: hp(1),
-    paddingHorizontal: wp(4),
-  },
-  sendButtonText: {
-    color: '#FFF',
-    fontSize: wp(4),
-  },
-  buttonsContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginVertical: hp(0),
-  },
-  recordButton: {
-    marginHorizontal: wp(5),
-  },
-  recordIcon: {
-    width: hp(10),
-    height: hp(10),
-  },
-  sideButton: {
-    backgroundColor: '#05445E',
-    borderRadius: 20,
-    paddingVertical: hp(1),
-    paddingHorizontal: wp(4),
-  },
-  sideButtonText: {
-    color: '#FFF',
-    fontSize: wp(4),
-  },
-  placeholderText: {
-    color: '#FFF',
-    textAlign: 'center',
-    marginTop: hp(2),
-  },
-});
 
 export default BotScreen;
 

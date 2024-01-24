@@ -1,27 +1,21 @@
 // src/screens/HomeScreen.js
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text } from 'react-native';
+
+import useAppSettings from '../store/useAppSettings';
+import { translate } from '../components/translate';
+import { useDynamicStyles } from '../hooks/useDynamicStyles';
 
 const HomeScreen = () => {
+  const { language } = useAppSettings();
+  const dynamicStyles = useDynamicStyles();
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.titleText}>Home</Text>
-      <Text style={styles.titleText}>Coming soon</Text>
+    <View style={dynamicStyles.container}>
+      <Text style={dynamicStyles.titleText}>{translate('homeTitle', language)}</Text>
+      <Text style={dynamicStyles.titleText}>Coming soon</Text>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#1A2F38',
-  },
-  titleText: {
-    color: '#FFF',
-    fontSize: 16,
-  },
-});
 
 export default HomeScreen;

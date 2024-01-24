@@ -1,0 +1,47 @@
+{
+    "settingsTitle": "Indstillinger",
+    "generalSettings": "Generelt",
+    "changeLanguage": "Skift Sprog",
+    "English": "Engelsk",
+    "Danish": "Dansk",
+    "darkMode": "Mørk Tilstand",
+    "audioSettings": "Lyd",
+    "playbackVoice": "Afspilningsstemme",
+    "playbackSpeed": "Afspilningshastighed",
+    "autoPlayAudio": "Auto Afspil Lyd",
+    "forgetMe": "Glem Mig",
+    "saveSettings": "Gem Indstillinger",
+    "cancel": "Annuller",
+
+    "homeTitle": "Hjem",
+    
+    "signInToUseChatBot": "Du skal være logget ind for at bruge chatbotten",
+    "startNewConversation": "Start en ny samtale",
+    "typeMessageHere": "Skriv besked her",
+    "send": "Send",
+    "attach": "Vedhæft",
+    "closeChat": "Luk Chat",
+    "newChat": "Ny Chat",
+    "recording": "Optagelse",
+    "botTitle": "Longevity Genie",
+    "loadingMessages": "Indlæser beskeder...",
+    "noMessageText": "Ingen beskedtekst tilgængelig",
+    "playAudio": "Afspil Lyd",
+    "pauseAudio": "Pause Lyd",
+    "errorPlayingAudio": "Fejl ved afspilning af lyd",
+
+    "threadsTitle": "Dine Tråde",
+    "threadsCancel": "Annuller",
+    "threadsSave": "Gem",
+    "threadsDelete": "Slet",
+
+    "healthTitle": "Helbred",
+
+    "trainingTitle": "Træning",
+
+    "nutritionTitle": "Ernæring og kost",
+
+    "profileTitle": "Profil"
+    
+    
+}

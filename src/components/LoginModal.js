@@ -39,6 +39,7 @@ const LoginModal = ({ isVisible, onCancel }) => {
       onRequestClose={onCancel}
       style={styles.modal}
       backdropOpacity={0.5}
+      animationType="slide"
     >
       <KeyboardAvoidingView 
         behavior={Platform.OS === "ios" ? "padding" : "height"}

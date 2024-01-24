@@ -10,6 +10,9 @@ import { tamaguiConfig } from './tamagui.config';
 import * as SplashScreen from 'expo-splash-screen';
 import useFonts from './src/hooks/useFonts';
 
+import { ThemeProvider } from './src/context/ThemeContext';
+import useAppSettings from './src/store/useAppSettings';
+
 // Components
 import Header from './src/components/Header';
 
@@ -26,11 +29,12 @@ const { width } = Dimensions.get('window');
 const screenComponents = [HomeScreen, BotScreen, ThreadsScreen, HealthScreen, TrainingScreen, NutritionScreen, ProfileScreen];
 
 const App = () => {
+  const { displaySetting } = useAppSettings();
+
   const [isReady, setIsReady] = useState(false);
   const [currentScreen, setCurrentScreen] = useState(0);
   const translateX = useRef(new Animated.Value(0)).current;
   const swipeThreshold = 100;
-
   const [routeParams, setRouteParams] = useState({});
 
 
@@ -86,42 +90,42 @@ const App = () => {
     return null; // Return null to render nothing while loading
   }
 
-  const ActiveScreen = screenComponents[currentScreen];
-
   return (
     <TamaguiProvider config={tamaguiConfig}>
-      <NavigationContainer>
-      <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#1A2F38' }}>
-          <Header
-            currentScreen={currentScreen}
-            navigateToScreen={navigateToScreen}
-          />
-          <PanGestureHandler
-            onGestureEvent={onGestureEvent}
-            onHandlerStateChange={onHandlerStateChange}
-          >
-            <Animated.View
-              style={{
-                flex: 1,
-                flexDirection: 'row',
-                width: width * screenComponents.length,
-                transform: [{ translateX }],
-              }}
+      <ThemeProvider>
+        <NavigationContainer>
+          <GestureHandlerRootView style={{ flex: 1, backgroundColor: displaySetting === 'dark' ? '#1A2F38' : '#D3E0EA' }}>
+            <Header
+              currentScreen={currentScreen}
+              navigateToScreen={navigateToScreen}
+            />
+            <PanGestureHandler
+              onGestureEvent={onGestureEvent}
+              onHandlerStateChange={onHandlerStateChange}
             >
-              {screenComponents.map((ScreenComponent, index) => (
-                <View key={index} style={{ width, flex: 1 }}>
-                  <ScreenComponent
-                    isActive={index === currentScreen}
-                    route={{ params: routeParams }}
-                    navigateToScreen={navigateToScreen}
-                    navigation={{ navigate: navigateToScreen }}
-                  />
-                </View>
-              ))}
-            </Animated.View>
-          </PanGestureHandler>
-        </GestureHandlerRootView>
-      </NavigationContainer>
+              <Animated.View
+                style={{
+                  flex: 1,
+                  flexDirection: 'row',
+                  width: width * screenComponents.length,
+                  transform: [{ translateX }],
+                }}
+              >
+                {screenComponents.map((ScreenComponent, index) => (
+                  <View key={index} style={{ width, flex: 1 }}>
+                    <ScreenComponent
+                      isActive={index === currentScreen}
+                      route={{ params: routeParams }}
+                      navigateToScreen={navigateToScreen}
+                      navigation={{ navigate: navigateToScreen }}
+                    />
+                  </View>
+                ))}
+              </Animated.View>
+            </PanGestureHandler>
+          </GestureHandlerRootView>
+        </NavigationContainer>
+      </ThemeProvider>
     </TamaguiProvider>
   );
 };

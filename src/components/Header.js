@@ -1,8 +1,7 @@
 // /src/components/Header.js
 import React, { useState } from 'react';
-import { View, TouchableOpacity, StyleSheet, Modal, TouchableWithoutFeedback } from 'react-native';
+import { View, TouchableOpacity, Modal, TouchableWithoutFeedback } from 'react-native';
 import { FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
-import useStore from '../store/store';
 
 import TopMenu from './TopMenu';
 import LoginModal from './LoginModal';
@@ -10,13 +9,20 @@ import SignupModal from './SignupModal';
 import SettingsModal from './SettingsModal';
 import DropdownButtons from './DropdownButtons';
 
+import useStore from '../store/store';
+import { useDynamicStyles } from '../hooks/useDynamicStyles';
+import { useTheme } from '../context/ThemeContext';
+
 const Header = ({ currentScreen, navigateToScreen }) => {
+  const user = useStore(state => state.user);
+  const clearUser = useStore(state => state.clearUser);
+  const dynamicStyles = useDynamicStyles();
+  const { theme } = useTheme();
+
   const [isSignupModalVisible, setSignupModalVisible] = useState(false);
   const [isLoginModalVisible, setLoginModalVisible] = useState(false);
   const [isSettingsModalVisible, setSettingsModalVisible] = useState(false);
   const [isDropdownOpen, setDropdownOpen] = useState(false);
-  const user = useStore(state => state.user);
-  const clearUser = useStore(state => state.clearUser);
 
   const handleLogin = () => {
     setLoginModalVisible(true);
@@ -59,7 +65,7 @@ const Header = ({ currentScreen, navigateToScreen }) => {
 
   const renderDropdown = () => (
     <TouchableWithoutFeedback>
-      <View style={styles.dropdownContainer}>
+      <View style={dynamicStyles.dropdownContainer}>
         <DropdownButtons
           onLogin={() => handleDropdownAction(handleLogin)}
           onLogout={handleLogout}
@@ -71,12 +77,16 @@ const Header = ({ currentScreen, navigateToScreen }) => {
     </TouchableWithoutFeedback>
   );
 
+  const iconColor = theme === 'dark' ? "#FFF" : "#05445E";
+  const unselectedColor = theme === 'dark' ? "#A9A9A9" : "#696969";
+  const homeIconColor = currentScreen === 0 ? iconColor : unselectedColor;
+
   return (
-    <View style={styles.headerContainer}>
+    <View style={dynamicStyles.headerContainer}>
       
       {/* Home icon */}
       <TouchableOpacity onPress={() => navigateToScreen(0)}>
-        <FontAwesome name="home" size={35} color={currentScreen === 0 ? "#FFF" : "#A9A9A9"} />
+        <FontAwesome name="home" size={35} color={homeIconColor} />
       </TouchableOpacity>
 
       {/* Top menu carousel */}
@@ -86,7 +96,7 @@ const Header = ({ currentScreen, navigateToScreen }) => {
 
       {/* Dropdown Button Menu */}
       <TouchableOpacity onPress={() => setDropdownOpen(!isDropdownOpen)}>
-        <MaterialCommunityIcons name="menu-down" size={35} color="#FFF" />
+        <MaterialCommunityIcons name="menu-down" size={35} color={iconColor} />
       </TouchableOpacity>
       <Modal
         visible={isDropdownOpen}
@@ -95,7 +105,7 @@ const Header = ({ currentScreen, navigateToScreen }) => {
         onRequestClose={toggleDropdown}
       >
         <TouchableWithoutFeedback onPress={toggleDropdown}>
-          <View style={styles.modalOverlay}>
+          <View style={dynamicStyles.modalOverlay}>
             {renderDropdown()}
           </View>
         </TouchableWithoutFeedback>
@@ -118,26 +128,5 @@ const Header = ({ currentScreen, navigateToScreen }) => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  headerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 15,
-    backgroundColor: '#05445E',
-    paddingTop: 40,
-    paddingBottom: 1,
-  },
-  modalOverlay: {
-    flex: 1,
-    justifyContent: 'flex-start',
-    alignItems: 'flex-end',
-    paddingTop: 90,
-  },
-  dropdownContainer: {
-    width: 100,
-  },
-
-});
 
 export default Header;

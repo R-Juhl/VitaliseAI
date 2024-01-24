@@ -75,10 +75,8 @@ def get_initial_message(thread_id, user_id):
         print(f"From get_initial_message: Fetched User Language: {user_lang}")
 
     assistant_config = assistant_configs.get(1).get(user_lang, {})
-    print(f"Assistant Config in get_initial_message: {assistant_config}")  # Additional Debug Log
 
     initial_content = assistant_config.get("initial_message", "Error: Initial message not found")
-    print(f"Initial Content in get_initial_message: {initial_content}")  # Additional Debug Log
 
     if not thread_id:
         raise ValueError("No thread ID provided for initial message")

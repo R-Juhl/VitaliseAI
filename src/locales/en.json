@@ -1,0 +1,47 @@
+{
+    "settingsTitle": "Settings",
+    "generalSettings": "General",
+    "changeLanguage": "Change Language",
+    "English": "English",
+    "Danish": "Danish",
+    "darkMode": "Dark Mode",
+    "audioSettings": "Audio",
+    "playbackVoice": "Playback Voice",
+    "playbackSpeed": "Playback Speed",
+    "autoPlayAudio": "Auto Play Audio",
+    "forgetMe": "Forget Me",
+    "saveSettings": "Save Settings",
+    "cancel": "Cancel",
+
+    "homeTitle": "Home",
+    
+    "signInToUseChatBot": "You need to be signed in to use the chat bot",
+    "startNewConversation": "Start a new conversation",
+    "typeMessageHere": "Type message here",
+    "send": "Send",
+    "attach": "Attach",
+    "closeChat": "Close Chat",
+    "newChat": "New Chat",
+    "recording": "Recording",
+    "botTitle": "Longevity Genie",
+    "loadingMessages": "Loading messages...",
+    "noMessageText": "No message text available",
+    "playAudio": "Play Audio",
+    "pauseAudio": "Pause Audio",
+    "errorPlayingAudio": "Error playing audio",
+
+    "threadTitle": "Your Threads",
+    "threadsCancel": "Cancel",
+    "threadsSave": "Save",
+    "threadsDelete": "Delete",
+
+    "healthTitle": "Health",
+
+    "trainingTitle": "Training",
+
+    "nutritionTitle": "Nutrition",
+
+    "profileTitle": "Profile"
+    
+    
+}

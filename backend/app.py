@@ -24,7 +24,6 @@ cors_origin = os.environ.get("CORS_ORIGIN", "exp://192.168.20.122:8081")
 #CORS(app, origins=[cors_origin])
 CORS(app) # for development only
 
-
 # Database configuration (DigitalOcean hosting)
 postgres_user = os.environ.get("POSTGRES_USER_HEALTHAPP")
 postgres_pw = os.environ.get("POSTGRES_PW_HEALTHAPP")
@@ -44,15 +43,10 @@ with app.app_context():
     db.create_all()
 
 
-@app.route('/test')
-def test_route():
-    return "Flask server is reachable!"
-
 ### General and Header.js ###
 
 @app.route('/create_user', methods=['POST'])
 def create_user():
-    print("create_user route reached")
     data = request.json
     print("Received data:", data)
     hashed_password = generate_password_hash(data['password']) # Hash the password
@@ -144,6 +138,39 @@ def update_user_version():
         user.user_version = user_version
         db.session.commit()
         return jsonify({"message": "User version updated successfully"}), 200
+    return jsonify({"error": "User not found"}), 404
+
+
+### Settings.js ###
+
+@app.route('/update_user_settings', methods=['POST'])
+def update_user_settings():
+    data = request.json
+    user_id = data['user_id']
+    user = User.query.get(user_id)
+    if user:
+        user.language = data['language']
+        user.display_setting = data['display_setting']
+        user.voice_setting = data['voice_setting']
+        user.voice_speed_setting = data['voice_speed_setting']
+        user.autoplaybackaudio_setting = data['autoplaybackaudio_setting']
+        db.session.commit()
+        return jsonify({"message": "Settings updated successfully"}), 200
+    return jsonify({"error": "User not found"}), 404
+
+@app.route('/get_user_settings', methods=['POST'])
+def get_user_settings():
+    user_id = request.json.get('user_id')
+    user = User.query.get(user_id)
+    if user:
+        settings = {
+            "language": user.language,
+            "display_setting": user.display_setting,
+            "voice_setting": user.voice_setting,
+            "voice_speed_setting": user.voice_speed_setting,
+            "autoplaybackaudio_setting": user.autoplaybackaudio_setting
+        }
+        return jsonify(settings), 200
     return jsonify({"error": "User not found"}), 404
 
 
@@ -277,20 +304,37 @@ def get_user_thread_sessions():
     return jsonify(sessions_data)
 
 # Route for converting text to speech #
+VOICE_SETTING_MAP = {
+    1: 'echo',
+    2: 'alloy',
+    3: 'fable',
+    4: 'onyx',
+    5: 'nova',
+    6: 'shimmer',
+}
 @app.route('/text_to_speech', methods=['POST'])
 def text_to_speech():
     data = request.json
     text = data.get('text')
+    user_id = data.get('user_id')
+
+    # Fetch user's voice_speed_setting
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    voice_speed = user.voice_speed_setting  # Fetch voice speed setting
+    voice_setting = VOICE_SETTING_MAP.get(user.voice_setting, 'Echo')  # Default to 'Echo' if not found
     
     try:
         response = client.audio.speech.create(
             model="tts-1",
-            voice="echo",
-            input=text
+            voice=voice_setting,
+            input=text,
+            speed=voice_speed
         )
         speech_file_path = Path('audio') / f"speech_{uuid.uuid4()}.mp3"
         response.stream_to_file(str(speech_file_path))
-        # Ensure the URL is correct and accessible from the frontend
         audio_url = f"http://enormous-mallard-noted.ngrok-free.app/audio/{speech_file_path.name}"
         return jsonify({"audio_url": audio_url}), 200
     except Exception as e:
@@ -299,8 +343,6 @@ def text_to_speech():
 @app.route('/audio/<filename>')
 def uploaded_file(filename):
     return send_from_directory('audio', filename)
-
-
 
 @app.route('/upload_voice_memo', methods=['POST'])
 def upload_voice_memo():
@@ -332,9 +374,6 @@ def transcribe_voice_memo():
     except Exception as e:
         print("An error occurred:", e)
         return jsonify({"error": "Failed to transcribe audio"}), 500
-
-
-
 
 
 if __name__ == '__main__':

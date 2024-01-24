@@ -10,11 +10,13 @@
   },
   "dependencies": {
     "@expo/webpack-config": "^19.0.0",
+    "@react-native-community/slider": "^4.5.0",
     "@tamagui/config": "^1.85.0",
     "@tamagui/core": "^1.85.0",
     "axios": "^1.6.5",
     "expo": "~49.0.15",
     "expo-app-loading": "^2.1.1",
+    "expo-av": "~13.4.1",
     "expo-font": "~11.4.0",
     "expo-router": "^2.0.14",
     "expo-splash-screen": "~0.20.5",
@@ -24,13 +26,15 @@
     "react-native": "0.72.6",
     "react-native-gesture-handler": "~2.12.0",
     "react-native-modal": "^13.0.1",
+    "react-native-picker-select": "^9.0.0",
     "react-native-reanimated": "~3.3.0",
     "react-native-responsive-screen": "^1.4.2",
     "react-native-web": "~0.19.6",
     "react-query": "^3.39.3",
     "tamagui": "^1.85.0",
     "zustand": "^4.4.7",
-    "expo-av": "~13.4.1"
+    "expo-image-picker": "~14.3.2",
+    "expo-camera": "~13.4.4"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"
