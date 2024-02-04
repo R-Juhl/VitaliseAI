@@ -2,10 +2,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   View, Text, Image, ScrollView, SafeAreaView, TouchableOpacity, TextInput, 
-  ActivityIndicator, KeyboardAvoidingView, Platform 
+  ActivityIndicator, KeyboardAvoidingView, Platform, Modal 
 } from 'react-native';
+import { AntDesign, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
-import { AntDesign } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
+import { Camera } from 'expo-camera';
 import axios from 'axios';
 
 import useStore from '../store/store';
@@ -19,6 +21,8 @@ const BotScreen = ({ isActive, route }) => {
   const { language } = useAppSettings();
   const dynamicStyles = useDynamicStyles();
   const { theme } = useTheme();
+
+  const iconColor = theme === 'dark' ? "#FFF" : "#05445E";
   
   const scrollViewRef = useRef();
   const [messages, setMessages] = useState([]);
@@ -28,10 +32,23 @@ const BotScreen = ({ isActive, route }) => {
   const [playingAudio, setPlayingAudio] = useState(null);
   const [sound, setSound] = useState(null);
   const [recording, setRecording] = useState();
+  const [imageAttachment, setImageAttachment] = useState(null);
+  const [isImageAttached, setIsImageAttached] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const [dropupVisible, setDropupVisible] = useState(false);
+  const dropupIcon = dropupVisible ? "menu-down" : "menu-up";
+  const [selectedBot, setSelectedBot] = useState("Chat Bot");
+  const [assistantId, setAssistantId] = useState(1); // Default to Chat Bot ID
 
   const apiBaseUrl = 'http://enormous-mallard-noted.ngrok-free.app';
 
-  const iconColor = theme === 'dark' ? "#FFF" : "#05445E";
+  // Function to handle bot selection from dropup menu
+  const handleSelectBot = (botName, botId) => {
+    setSelectedBot(botName);
+    setAssistantId(botId);
+    setDropupVisible(false); // Assuming you have a state to control the visibility of the dropup menu
+  };
 
   useEffect(() => {
     if (!user?.id) {
@@ -93,7 +110,7 @@ const BotScreen = ({ isActive, route }) => {
 
   // Handle sending new message
   const handleSendMessage = async (messageText) => {
-    if (!messageText || !messageText.trim()) return;
+    if (!messageText.trim() && !imageAttachment) return;
   
     const newUserMessage = { text: messageText, role: 'user' };
     setMessages([...messages, newUserMessage]);
@@ -102,11 +119,27 @@ const BotScreen = ({ isActive, route }) => {
       generateThreadTitle(threadId, messageText);
     }
   
+    // Additional code to handle image upload
+    let formData = new FormData();
+    if (imageAttachment) {
+        const uriParts = imageAttachment[0].uri.split('.');
+        const fileType = uriParts[uriParts.length - 1];
+
+        formData.append('image', {
+            uri: imageAttachment[0].uri,
+            name: `photo.${fileType}`,
+            type: `image/${fileType}`,
+        });
+    }
+    formData.append('user_input', messageText);
+    formData.append('thread_id', threadId);
+
     setIsLoading(true);
     try {
-      const response = await axios.post(`${apiBaseUrl}/thread_continue`, {
-        thread_id: threadId,
-        user_input: messageText
+      const response = await axios.post(`${apiBaseUrl}/thread_continue_with_image`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
       const newAssistantMessage = { text: response.data.message, role: 'assistant' };
       setMessages(currentMessages => [...currentMessages, newAssistantMessage]);
@@ -115,6 +148,8 @@ const BotScreen = ({ isActive, route }) => {
     } finally {
       setIsLoading(false);
       setUserMessage("");
+      setImageAttachment(null);
+      setIsImageAttached(false);
     }
   };
 
@@ -151,12 +186,6 @@ const BotScreen = ({ isActive, route }) => {
   
     initiateThread();
   }, [user?.id, isActive, threadId]);
-
-
-  const handleAttach = () => {
-    // Placeholder for future implementation
-    console.log('Attach button pressed');
-  };
 
   const handleNewChat = async () => {
     const createResponse = await axios.post(`${apiBaseUrl}/create_new_thread`, { user_id: user.id });
@@ -298,20 +327,61 @@ const BotScreen = ({ isActive, route }) => {
       </View>
     );
   };
+
+  // Open a modal which should give the user the options/buttons: "cancel", "take picture", and "select image from gallery"
+  const handleAttach = () => {
+    console.log('Attach button pressed');
+    setModalVisible(true);
+  };
+
+  // Function to handle image attachment
+  const handleImageAttachment = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setImageAttachment(result.assets);
+      setIsImageAttached(true);
+    }
+  };
+
+  // Function to handle camera access
+  const handleCameraAccess = async () => {
+    let permissionResult = await Camera.requestCameraPermissionsAsync();
+
+    if (permissionResult.granted === false) {
+      alert("Permission to access camera is required!");
+      return;
+    }
+
+    let result = await ImagePicker.launchCameraAsync();
+
+    if (!result.canceled) {
+      setImageAttachment(result.assets);
+      setIsImageAttached(true);
+    }
+  };
   
   // Function to format text
   const formatText = (text, role = 'assistant') => {
     if (!text) {
       return <Text style={dynamicStyles.botMessage}>{translate('noMessageText', language)}</Text>;
     }
-  
+
+    // Removing annotation markers like &#8203;``【oaicite:0】``&#8203;
+    const cleanedText = text.replace(/\【[^)]*\】/g, '');
+
     // Split the text by line breaks
-    const lines = text.split('\n');
+    const lines = cleanedText.split('\n');
     const formattedLines = lines.map((line, index) => {
       // Replace markdown-like bold syntax with bold text
       const boldRegex = /\*\*(.*?)\*\*/g;
       const parts = line.split(boldRegex);
-  
+
       return (
         <Text key={index} style={role === 'system' ? dynamicStyles.botSystemMessage : (role === 'user' ? dynamicStyles.botMessageUser : dynamicStyles.botMessageAssistant)}>
           {parts.map((part, i) => {
@@ -324,7 +394,7 @@ const BotScreen = ({ isActive, route }) => {
         </Text>
       );
     });
-  
+
     return formattedLines;
   };
 
@@ -335,6 +405,37 @@ const BotScreen = ({ isActive, route }) => {
       keyboardVerticalOffset={Platform.OS === "ios" ? 25 : 0}
     >
       <View style={dynamicStyles.botContainer}>
+
+        {/* Attach or Select Image as Context Modal */}
+        <Modal
+          animationType="slide"
+          style={dynamicStyles.attachModal}
+          transparent={true}
+          visible={modalVisible}
+          onBackdropPress={() => setModalVisible(false)}
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <View style={dynamicStyles.centeredView}>
+            <View style={dynamicStyles.modalView}>
+              <Text style={dynamicStyles.attachModalTitle}>Attach an Image</Text>
+              {isImageAttached && (
+                <AntDesign name="picture" size={100} color="green" />
+              )}
+              <View style={dynamicStyles.modalButtonsRow}>
+                <TouchableOpacity style={dynamicStyles.attachModalButton} onPress={handleCameraAccess}>
+                  <Text style={dynamicStyles.textStyle}>Take Picture</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={dynamicStyles.attachModalButton} onPress={handleImageAttachment}>
+                  <Text style={dynamicStyles.textStyle}>Select Image</Text>
+                </TouchableOpacity>
+              </View>
+              <TouchableOpacity style={dynamicStyles.cancelModalButton} onPress={() => setModalVisible(false)}>
+                <Text style={dynamicStyles.textStyle}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+
         <SafeAreaView style={dynamicStyles.botSafeArea}>
           
           {/* Bot Icon */}
@@ -367,6 +468,10 @@ const BotScreen = ({ isActive, route }) => {
                   color="#189AB4" 
                   style={{ marginTop: 20 }} 
                 />}
+
+              {isImageAttached && (
+                <AntDesign name="picture" size={24} color="green" style={dynamicStyles.imageAttachmentIcon} />
+              )}
               </ScrollView>
             </View>
           </View>
@@ -396,13 +501,25 @@ const BotScreen = ({ isActive, route }) => {
             </TouchableOpacity>
           </View>
 
-          {/* Record Button and New/Exit Chat Buttons */}
+          {/* Record Button, Bot Version Button, and New Chat Button */}
           <View style={dynamicStyles.botButtonsContainer}>
-            <TouchableOpacity 
-              style={dynamicStyles.botSideButton}
-              disabled={!user?.id}
-            >
-              <Text style={dynamicStyles.botSideButtonText}>{translate('closeChat', language)}</Text>
+            <TouchableOpacity onPress={() => setDropupVisible(!dropupVisible)} style={dynamicStyles.botSideButton}>
+              <Text style={dynamicStyles.botSideButtonText}>{selectedBot}</Text>
+              <MaterialCommunityIcons name={dropupIcon} size={24} color={iconColor} />
+              {dropupVisible && (
+                <View style={dynamicStyles.dropupMenuContainer}>
+                  {selectedBot !== "Chat Bot" && (
+                    <TouchableOpacity onPress={() => handleSelectBot("Chat Bot", 1)}>
+                      <Text style={dynamicStyles.dropupMenuItem}>{translate('botChatVersion', language)}</Text>
+                    </TouchableOpacity>
+                  )}
+                  {selectedBot !== "Trainer" && (
+                    <TouchableOpacity onPress={() => handleSelectBot("Trainer", 2)}>
+                      <Text style={dynamicStyles.dropupMenuItem}>{translate('botTrainingVersion', language)}</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              )}
             </TouchableOpacity>
 
             <TouchableOpacity 

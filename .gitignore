@@ -3,6 +3,7 @@
 # Backend folders
 backend/audio/
 backend/uploads/
+backend/venv/
 
 # dependencies
 node_modules/

@@ -133,6 +133,11 @@ const ThreadsScreen = ({ isActive, navigateToScreen }) => {
 
       {/* Thread Listing */}
       <Text style={dynamicStyles.threadsTitle}>{translate('threadsTitle', language)}</Text>
+      
+      <Text style={dynamicStyles.botWelcomeText}>
+        {user ? `Hi, ${user.name}.` : 'Log in to see your saved threads listed here'}
+      </Text>
+
       <FlatList
         data={threads}
         keyExtractor={item => item.thread_id}

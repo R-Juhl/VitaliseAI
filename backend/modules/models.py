@@ -1,7 +1,6 @@
 # models.py
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-import json
 
 db = SQLAlchemy()
 
@@ -35,16 +34,8 @@ class UserProfile(db.Model):
     health_conditions = db.Column(db.Text)
     goals = db.Column(db.Text)  # Store as a comma-separated string for different goals
     height_unit = db.Column(db.String(10), default="cm")  # "cm" or "inches"
-
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "user_id": self.user_id,
-            "age": self.age,
-            "height": self.height,
-            "fitness_level": self.fitness_level,
-            "dietary_restrictions": self.dietary_restrictions,
-            "health_conditions": self.health_conditions,
-            "goals": json.loads(self.goals) if self.goals else None,
-            "height_unit": self.height_unit
-        }
+    
+class Admin(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    password = db.Column(db.String(260), nullable=False)

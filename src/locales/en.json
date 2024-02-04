@@ -14,13 +14,15 @@
     "cancel": "Cancel",
 
     "homeTitle": "Home",
+    "homePlanTitle": "Plan for Today:",
     
     "signInToUseChatBot": "You need to be signed in to use the chat bot",
     "startNewConversation": "Start a new conversation",
     "typeMessageHere": "Type message here",
     "send": "Send",
     "attach": "Attach",
-    "closeChat": "Close Chat",
+    "botChatVersion": "Chat Bot",
+    "botTrainingVersion": "Trainer",
     "newChat": "New Chat",
     "recording": "Recording",
     "botTitle": "Longevity Genie",
@@ -30,7 +32,7 @@
     "pauseAudio": "Pause Audio",
     "errorPlayingAudio": "Error playing audio",
 
-    "threadTitle": "Your Threads",
+    "threadsTitle": "Your Threads",
     "threadsCancel": "Cancel",
     "threadsSave": "Save",
     "threadsDelete": "Delete",

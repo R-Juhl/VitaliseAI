@@ -153,7 +153,36 @@ export const useDynamicStyles = () => {
       },
 
 
-      // HomeScreen
+      //*** */ HomeScreen ***//
+      homeTitle: {
+        color: theme === 'dark' ? '#FFF' : '#1A2F38',
+        fontSize: wp(5),
+        fontWeight: 'bold',
+        marginVertical: hp(1),
+      },
+      homePlanItem: {
+        backgroundColor: theme === 'dark' ? '#05445E' : '#A9C0D8',
+        padding: 15,
+        borderRadius: 10,
+        marginBottom: 10,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        maxWidth: wp('90%'),
+      },
+      homePlanTitle: {
+        color: theme === 'dark' ? '#FFF' : '#1A2F38',
+        fontSize: 16,
+        width: wp('75%'),
+      },
+      homePlanDate: {
+        color: theme === 'dark' ? '#CCC' : '#696969',
+        fontSize: 12,
+      },
+      homePlanButton: {
+        padding: 10,
+        borderRadius: 5,
+      },
 
 
 
@@ -161,6 +190,10 @@ export const useDynamicStyles = () => {
       botContainer: {
         flex: 1,
         backgroundColor: theme === 'dark' ? '#1A2F38' : '#D3E0EA',
+      },
+      botWelcomeText: {
+        color: theme === 'dark' ? '#FFF' : '#1A2F38',
+        marginBottom: 15,
       },
       botSafeArea: {
         flex: 1,
@@ -278,6 +311,50 @@ export const useDynamicStyles = () => {
         justifyContent: 'center',
         alignItems: 'center',
       },
+      imageAttachmentIcon: {
+        marginLeft: wp(3),
+        marginRight: wp(1),
+        width: hp(15),
+        height: hp(15),
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
+      attachModal: {
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
+      attachModalTitle: {
+        color: theme === 'dark' ? '#FFF' : '#1A2F38',
+        fontSize: wp(5),
+        fontWeight: 'bold',
+        marginVertical: hp(1),
+      },
+      modalButtonsRow: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginVertical: 5,
+      },
+      cancelModalButton: {
+        backgroundColor: '#189AB4',
+        padding: 10,
+        borderRadius: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginVertical: 5,
+        minHeight: 45,
+      },
+      attachModalButton: {
+        backgroundColor: '#189AB4',
+        padding: 10,
+        borderRadius: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginVertical: 5,
+        minHeight: 45,
+        flex: 1,
+        marginHorizontal: 5,
+      },
       botSendButton: {
         backgroundColor: '#05445E',
         borderRadius: 20,
@@ -300,10 +377,32 @@ export const useDynamicStyles = () => {
         borderRadius: 20,
         paddingVertical: hp(1),
         paddingHorizontal: wp(4),
+        flexDirection: 'row',
+        width: wp(28),
+        alignItems: 'center',
+        justifyContent: 'center',
       },
       botSideButtonText: {
         color: '#FFF',
         fontSize: wp(4),
+        textAlign: 'center',
+      },
+
+
+      dropupMenuContainer: {
+        position: 'absolute',
+        bottom: 50,
+        alignSelf: 'center',
+        backgroundColor: '#05445E',
+        borderRadius: 20,
+        width: wp(28),
+      },
+      dropupMenuItem: {
+        color: '#FFF',
+        paddingVertical: hp(1),
+        paddingHorizontal: wp(4),
+        fontSize: wp(4),
+        textAlign: 'center',
       },
 
 
@@ -400,6 +499,127 @@ export const useDynamicStyles = () => {
         justifyContent: 'space-between',
       },
 
+
+      //*** ProfileScreen ***//
+      profileContainer: {
+        flex: 1,
+        backgroundColor: theme === 'dark' ? '#1A2F38' : '#D3E0EA',
+        padding: 20,
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+      profileScrollviewContainer: {
+        flex: 1,
+        backgroundColor: theme === 'dark' ? '#05445E' : '#A9C0D8',
+        borderRadius: 20,
+        padding: wp(4),
+        marginTop: hp(1),
+      },
+      profileTitle: {
+        color: theme === 'dark' ? '#FFF' : '#1A2F38',
+        fontSize: wp(5),
+        fontWeight: 'bold',
+        marginVertical: hp(1),
+      },
+      profileWelcomeText: {
+        color: theme === 'dark' ? '#FFF' : '#1A2F38',
+        marginBottom: 15,
+      },
+      profileInputTitle: {
+        color: theme === 'dark' ? '#FFF' : '#1A2F38',
+        fontSize: 16,
+        width: wp('75%'),
+        marginVertical: 10,
+      },
+      profileInput: {
+        borderColor: '#189AB4',
+        backgroundColor: theme === 'dark' ? '#1A2F38' : '#A9C0D8',
+        color: theme === 'dark' ? '#FFF' : '#1A2F38',
+        borderRadius: 10,
+        borderWidth: 1,
+        width: '100%',
+        padding: 10,
+        marginBottom: 10,
+      },
+      profileInputPlaceholder: {
+        color: '#C2C2C2',
+      },
+      profilePickerSection: {
+        backgroundColor: theme === 'dark' ? '#189AB4' : '#A9C0D8',
+        padding: 10,
+        marginBottom: 5,
+        borderRadius: 5,
+      },
+      profilePicker: {
+        width: '100%',
+        color: theme === 'dark' ? '#FFF' : '#1A2F38',
+        inputIOS: {
+          color: theme === 'dark' ? '#FFF' : '#1A2F38',
+          backgroundColor: 'transparent',
+        },
+        inputAndroid: {
+          color: theme === 'dark' ? '#FFF' : '#1A2F38',
+          backgroundColor: 'transparent',
+        },
+      },
+      profileSlider: {
+        width: '100%',
+        height: 40,
+      },
+      profileFitnessLevel: {
+        color: theme === 'dark' ? '#FFF' : '#1A2F38',
+        textAlign: 'center',
+        marginVertical: 10,
+      },
+      profileCheckbox: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 10,
+      },
+      profileCheckboxLabel: {
+        marginLeft: 10,
+        color: theme === 'dark' ? '#FFF' : '#1A2F38',
+      },
+      goalsContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        alignItems: 'center',
+        marginVertical: 10,
+      },
+      goalItemContainer: {
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        height: 80,
+        width: '30%',
+      },
+      goalLabel: {
+        color: theme === 'dark' ? '#FFF' : '#1A2F38',
+        textAlign: 'center',
+        marginBottom: 5,
+      },
+      goalIcon: {
+        color: theme === 'dark' ? '#FFF' : '#1A2F38',
+        marginBottom: 5,
+      },
+      goalSwitch: {
+        marginTop: 5,
+      },
+      customGoalInputContainer: {
+        alignItems: 'center',
+        marginVertical: 10,
+      },
+      profileSaveButton: {
+        backgroundColor: '#189AB4',
+        padding: 10,
+        borderRadius: 10,
+        width: '100%',
+        alignItems: 'center',
+        marginTop: 10,
+        marginBottom: 40,
+      },
+      profileSaveButtonText: {
+        color: '#F4E9CD',
+      },
 
   });
 

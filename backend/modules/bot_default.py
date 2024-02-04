@@ -1,8 +1,9 @@
-# teacher_module.py:
+# bot_default.py:
 import os
 import openai
 from flask import jsonify
 import time
+import re
 from .models import db, User, UserThreads
 from .assistant_config import assistant_ids, assistant_configs
 
@@ -48,7 +49,22 @@ def get_thread(user_id):
         return new_thread.id, True
     else:
         return session.thread_id, False
-    
+
+#Not currently working, therefore not doing anything
+def process_annotations(message_content):
+    # Ensure that message_content is not None
+    if not message_content:
+        return ''
+
+    text = message_content.value
+
+    # Regular expression pattern to match annotation markers
+    pattern = r'\【[^)]*\】'
+    # Remove all matches of the pattern in the text
+    text = re.sub(pattern, '', text)
+
+    return text
+
 def get_thread_messages(thread_id):
     messages = client.beta.threads.messages.list(thread_id=thread_id)
     messages_list = []
@@ -90,9 +106,15 @@ def get_initial_message(thread_id, user_id):
     initial_message = message_response.content[0].text.value if message_response.content else ""
     return jsonify({"message": initial_message, "thread_id": thread_id})
 
-def continue_thread(thread_id, user_input):
+def continue_thread(thread_id, user_input, image_description=None):
 
-    print(f"Received the following user_input to add to thread: {user_input}")
+    # Modify the message based on the presence of an image description
+    if image_description:
+        user_input = f"User message: {user_input}. Brief description of the image the user has attached: {image_description}"
+        print(f"Received the following user_input to add to thread: {user_input}")
+    else:
+        print(f"Received the following user_input to add to thread: {user_input}")
+    
     cancel_active_runs(thread_id)
 
     # Fetch the thread ID from the UserThreads using the thread ID
@@ -104,7 +126,7 @@ def continue_thread(thread_id, user_input):
 
     if not assistant_id:
         return jsonify({"error": "Assistant ID not found for the thread"}), 404
-
+    
     # Send user input to the thread
     client.beta.threads.messages.create(
         thread_id=thread_id,

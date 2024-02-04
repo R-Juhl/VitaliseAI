@@ -14,13 +14,15 @@
     "cancel": "Annuller",
 
     "homeTitle": "Hjem",
+    "homePlanTitle": "Planen for i dag:",
     
     "signInToUseChatBot": "Du skal være logget ind for at bruge chatbotten",
     "startNewConversation": "Start en ny samtale",
     "typeMessageHere": "Skriv besked her",
     "send": "Send",
     "attach": "Vedhæft",
-    "closeChat": "Luk Chat",
+    "botChatVersion": "Chat Bot",
+    "botTrainingVersion": "Træner",
     "newChat": "Ny Chat",
     "recording": "Optagelse",
     "botTitle": "Longevity Genie",

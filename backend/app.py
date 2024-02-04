@@ -7,7 +7,9 @@ from werkzeug.utils import secure_filename
 from itsdangerous import URLSafeTimedSerializer as Serializer
 from datetime import datetime, timedelta
 import json
-from modules.models import db, User, UserThreads
+import base64
+import requests
+from modules.models import db, User, UserThreads, UserProfile
 
 # Modules:
 from modules.bot_default import get_initial_message, continue_thread, get_thread_messages
@@ -139,6 +141,60 @@ def update_user_version():
         db.session.commit()
         return jsonify({"message": "User version updated successfully"}), 200
     return jsonify({"error": "User not found"}), 404
+
+
+### Profile.js ###
+
+@app.route('/get_user_profile', methods=['POST'])
+def get_user_profile():
+    try:
+        user_id = request.json.get('user_id')
+        if not user_id:
+            return jsonify({"error": "User ID is required"}), 400
+
+        user_profile = UserProfile.query.filter_by(user_id=user_id).first()
+        if user_profile:
+            # Directly format the profile data for response
+            profile_data = {
+                "age": user_profile.age,
+                "height": user_profile.height,
+                "fitness_level": user_profile.fitness_level,
+                "dietary_restrictions": user_profile.dietary_restrictions or "None",
+                "health_conditions": user_profile.health_conditions or "None",
+                "goals": json.loads(user_profile.goals) if user_profile.goals else {},
+                "height_unit": user_profile.height_unit,
+            }
+            return jsonify(profile_data), 200
+        else:
+            return jsonify({"error": "Profile not found"}), 404
+    except Exception as e:
+        print(f"Exception occurred: {e}")
+        return jsonify({"error": "An error occurred processing your request"}), 500
+
+@app.route('/update_user_profile', methods=['POST'])
+def update_user_profile():
+    data = request.json
+    user_id = data['user_id']
+    user_profile = UserProfile.query.filter_by(user_id=user_id).first()
+    if not user_profile:
+        user_profile = UserProfile(user_id=user_id)
+
+    # Combine goals from checkboxes and additional text field
+    combined_goals = {**data.get('goals', {}), "additionalGoals": data.get('additionalGoals', '')}
+    goals_json = json.dumps(combined_goals)
+
+    # Update fields
+    user_profile.age = data.get('age')
+    user_profile.height = data.get('height')
+    user_profile.fitness_level = data.get('fitnessLevel')
+    user_profile.dietary_restrictions = data.get('dietaryRestrictions')
+    user_profile.health_conditions = data.get('healthConditions')
+    user_profile.goals = goals_json
+    user_profile.height_unit = data.get('heightUnit', "cm")
+
+    db.session.add(user_profile)
+    db.session.commit()
+    return jsonify({"message": "Profile updated successfully"}), 200
 
 
 ### Settings.js ###
@@ -294,6 +350,72 @@ def handle_continue():
     user_input = data.get('user_input')
     response = continue_thread(thread_id, user_input)
     return response
+
+# Route for continuing a thread with image attachment #
+# Helper function to encode image to base64
+def encode_image_to_base64(image_path):
+    with open(image_path, "rb") as image_file:
+        return base64.b64encode(image_file.read()).decode('utf-8')
+    
+@app.route('/thread_continue_with_image', methods=['POST'])
+def handle_continue_with_image():
+    thread_id = request.form.get('thread_id')
+    user_input = request.form.get('user_input')
+    image = request.files.get('image')
+
+    image_description = ""
+    if image:
+        # Save the image temporarily
+        image_path = os.path.join('uploads', secure_filename(image.filename))
+        image.save(image_path)
+
+        # Encode the image to base64
+        base64_image = encode_image_to_base64(image_path)
+
+        # Send request to OpenAI API for image analysis
+        payload = {
+            "model": "gpt-4-vision-preview",
+            "messages": [
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "Describe this image very briefly."
+                        },
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/jpeg;base64,{base64_image}"
+                            }
+                        }
+                    ]
+                }
+            ],
+            "max_tokens": 300
+        }
+
+        try:
+            headers = {
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {os.environ.get('OPENAI_API_KEY_HEALTHAPP')}"
+            }
+            response = requests.post("https://api.openai.com/v1/chat/completions", headers=headers, json=payload)
+            if response.status_code == 200:
+                image_description = response.json().get('choices')[0].get('message').get('content')
+            else:
+                print("Failed to analyze image:", response.text)
+        except Exception as e:
+            print("Error in analyzing image:", e)
+            return jsonify({"error": str(e)}), 500
+        finally:
+            # Remove temporary image file
+            os.remove(image_path)
+
+    response = continue_thread(thread_id, user_input, image_description)
+    return response
+
+
 
 # Route for getting the user's thread sessions #
 @app.route('/get_user_thead_sessions', methods=['POST'])
